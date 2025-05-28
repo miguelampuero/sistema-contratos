@@ -2,6 +2,7 @@ body {
   margin: 0;
   font-family: Arial, sans-serif;
   background-color: #f8f9fa;
+  display: flex;
 }
 
 .sidebar {
@@ -10,45 +11,48 @@ body {
   position: fixed;
   top: 0;
   left: 0;
-  background-color: #0d6efd;
+  background-color: #e5f2ff;
   padding-top: 20px;
-  color: white;
+  color: #333;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
 .sidebar a {
-  padding: 12px 20px;
-  text-decoration: none;
-  font-size: 18px;
-  color: #ffffff;
+  padding: 10px;
+  margin: 10px 0;
+  color: #333;
+  font-weight: bold;
+  border-radius: 5px;
   width: 100%;
-  display: block;
   text-align: left;
+  text-decoration: none;
   border-left: 4px solid transparent;
 }
 
 .sidebar a:hover, .sidebar a.active {
-  color: #ffffff;
-  background-color: #1d66d3;
+  background-color: #0d6efd;
+  color: white;
   border-left: 4px solid #0d6efd;
 }
 
 .sidebar img {
-  margin-bottom: 10px;
+  margin-bottom: 15px;
+  max-width: 180px;
 }
 
-.content {
+.main-content {
   margin-left: 240px;
   padding: 20px;
+  width: 100%;
 }
 
 /* Dar más ancho mínimo a la columna Descripción (6ª columna) */
 table thead tr th:nth-child(6),
 table tbody tr td:nth-child(6) {
     min-width: 300px;
-    white-space: normal; /* permite que el texto se envuelva en varias líneas */
+    white-space: normal;
 }
 
 /* Opcional: para que otras columnas de items (Cantidades, Importes) también puedan saltar líneas */

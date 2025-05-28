@@ -64,6 +64,7 @@ $resultado = $conexion->query($sql);
   <a href="../index.html"><i class="bi bi-house-door-fill"></i> Inicio</a>
   <a href="../registrar.html"><i class="bi bi-file-earmark-plus-fill"></i> Registrar Contrato</a>
   <a href="listar.php" class="active"><i class="bi bi-card-list"></i> Listar Contratos</a>
+  <a href="dashboard.php"><i class="bi bi-speedometer2"></i> Dashboard</a>
 </div>
 
 <div class="content container mt-4">
