@@ -17,6 +17,8 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  transition: transform 0.3s ease;
+  z-index: 1000;
 }
 
 .sidebar a {
@@ -59,4 +61,50 @@ table tbody tr td:nth-child(6) {
 table tbody tr td:nth-child(7),
 table tbody tr td:nth-child(8) {
     white-space: normal;
+}
+
+/* --- Media Queries para Responsive --- */
+@media (max-width: 991.98px) {
+  .sidebar {
+    width: 180px;
+  }
+  .main-content {
+    margin-left: 180px;
+  }
+}
+
+@media (max-width: 767.98px) {
+  body {
+    display: block;
+  }
+  
+  .sidebar {
+    position: fixed;
+    height: 100vh;
+    width: 220px;
+    transform: translateX(-100%);
+    /* Oculta el sidebar por defecto */
+  }
+
+  .sidebar.active {
+    transform: translateX(0);
+    box-shadow: 3px 0 6px rgba(0,0,0,0.3);
+  }
+
+  .main-content {
+    margin-left: 0;
+    padding: 20px 10px;
+  }
+
+  /* Aquí podrías agregar un botón hamburguesa para togglear el sidebar */
+}
+
+/* Opcional: aún más pequeño */
+@media (max-width: 479.98px) {
+  .sidebar {
+    width: 160px;
+  }
+  .main-content {
+    padding: 15px 8px;
+  }
 }
