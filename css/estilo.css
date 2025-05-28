@@ -43,3 +43,16 @@ body {
   margin-left: 240px;
   padding: 20px;
 }
+
+/* Dar más ancho mínimo a la columna Descripción (6ª columna) */
+table thead tr th:nth-child(6),
+table tbody tr td:nth-child(6) {
+    min-width: 300px;
+    white-space: normal; /* permite que el texto se envuelva en varias líneas */
+}
+
+/* Opcional: para que otras columnas de items (Cantidades, Importes) también puedan saltar líneas */
+table tbody tr td:nth-child(7),
+table tbody tr td:nth-child(8) {
+    white-space: normal;
+}

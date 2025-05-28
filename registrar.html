@@ -23,6 +23,7 @@
   <h2>Registrar Contrato</h2>
   <form action="php/guardar_contrato.php" method="POST" class="row g-3">
 
+    <!-- Datos generales -->
     <div class="col-md-6">
       <label for="nombre_empresa" class="form-label">Señor(es)</label>
       <input type="text" class="form-control" id="nombre_empresa" name="nombre_empresa" required>
@@ -30,12 +31,12 @@
 
     <div class="col-md-6">
       <label for="ruc" class="form-label">R.U.C.</label>
-      <input type="text" class="form-control" id="ruc" name="ruc" required>
+      <input type="text" class="form-control" id="ruc" name="ruc" maxlength="11" required>
     </div>
 
     <div class="col-md-6">
       <label for="telefono" class="form-label">Teléfono de Referencia</label>
-      <input type="tel" class="form-control" id="telefono" name="telefono">
+      <input type="tel" class="form-control" id="telefono" name="telefono" maxlength="9" required>
     </div>
 
     <div class="col-md-6">
@@ -43,36 +44,48 @@
       <input type="date" class="form-control" id="fecha" name="fecha" required>
     </div>
 
-    <div class="col-md-6">
-      <label for="descripcion" class="form-label">Descripción</label>
-      <textarea class="form-control" id="descripcion" name="descripcion" rows="2" required></textarea>
+    <hr class="my-4"/>
+
+    <!-- Ítems del contrato -->
+    <h5>Ítems del Contrato</h5>
+    <table class="table table-bordered" id="tabla-items">
+      <thead>
+        <tr>
+          <th>Descripción</th>
+          <th>Cantidad</th>
+          <th>Importe Unitario</th>
+          <th>Acción</th>
+        </tr>
+      </thead>
+      <tbody id="items-body">
+        <tr>
+          <td><textarea name="descripcion[]" class="form-control" rows="2" required></textarea></td>
+          <td><input type="number" name="cantidad[]" class="form-control cantidad" min="0" required></td>
+          <td><input type="number" name="importe_unitario[]" class="form-control importe_unitario" step="0.01" min="0" required></td>
+          <td><button type="button" class="btn btn-danger btn-sm eliminar-fila">Eliminar</button></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="mb-3">
+      <button type="button" class="btn btn-secondary" id="agregar-item">Agregar Ítem</button>
     </div>
 
-    <div class="col-md-3">
-      <label for="cantidad" class="form-label">Cantidad</label>
-      <input type="number" class="form-control" id="cantidad" name="cantidad" min="0" required>
-    </div>
-
-    <div class="col-md-3">
-      <label for="importe_unitario" class="form-label">Importe Unitario</label>
-      <input type="number" class="form-control" id="importe_unitario" name="importe_unitario" step="0.01" min="0" required>
-    </div>
-
+    <!-- Totales -->
     <div class="col-md-3">
       <label for="a_cuenta" class="form-label">A cuenta</label>
       <input type="number" class="form-control" id="a_cuenta" name="a_cuenta" step="0.01" min="0" value="0">
     </div>
 
     <div class="col-md-3">
-      <label for="saldo_mostrado" class="form-label">Saldo</label>
-      <input type="text" class="form-control" id="saldo_mostrado" readonly>
-      <input type="hidden" name="saldo" id="saldo_real">
-    </div>
-
-        <div class="col-md-3">
       <label for="total_mostrado" class="form-label">Total</label>
       <input type="text" class="form-control" id="total_mostrado" readonly>
       <input type="hidden" name="total" id="total_real">
+    </div>
+
+    <div class="col-md-3">
+      <label for="saldo_mostrado" class="form-label">Saldo</label>
+      <input type="text" class="form-control" id="saldo_mostrado" readonly>
+      <input type="hidden" name="saldo" id="saldo_real">
     </div>
 
     <div class="col-12">
@@ -82,32 +95,66 @@
 </div>
 
 <script>
-  const cantidad = document.getElementById('cantidad');
-  const importeUnitario = document.getElementById('importe_unitario');
-  const totalMostrado = document.getElementById('total_mostrado');
-  const totalReal = document.getElementById('total_real');
-  const aCuenta = document.getElementById('a_cuenta');
-  const saldoMostrado = document.getElementById('saldo_mostrado');
-  const saldoReal = document.getElementById('saldo_real');
+  // Función para calcular totales (igual que antes)
+  function calcularTotales() {
+    const cantidades = document.querySelectorAll('.cantidad');
+    const importes = document.querySelectorAll('.importe_unitario');
+    let total = 0;
 
-  function calcularTotalYSaldo() {
-    const cant = parseFloat(cantidad.value) || 0;
-    const importe = parseFloat(importeUnitario.value) || 0;
-    const a_cuenta_val = parseFloat(aCuenta.value) || 0;
+    cantidades.forEach((cantidad, i) => {
+      const c = parseFloat(cantidad.value) || 0;
+      const iu = parseFloat(importes[i].value) || 0;
+      total += c * iu;
+    });
 
-    const total = cant * importe;
-    const saldo = total - a_cuenta_val;
+    const aCuenta = parseFloat(document.getElementById('a_cuenta').value) || 0;
+    const saldo = total - aCuenta;
 
-    totalMostrado.value = total.toFixed(2);
-    totalReal.value = total.toFixed(2);
-
-    saldoMostrado.value = saldo.toFixed(2);
-    saldoReal.value = saldo.toFixed(2);
+    document.getElementById('total_mostrado').value = total.toFixed(2);
+    document.getElementById('total_real').value = total.toFixed(2);
+    document.getElementById('saldo_mostrado').value = saldo.toFixed(2);
+    document.getElementById('saldo_real').value = saldo.toFixed(2);
   }
 
-  cantidad.addEventListener('input', calcularTotalYSaldo);
-  importeUnitario.addEventListener('input', calcularTotalYSaldo);
-  aCuenta.addEventListener('input', calcularTotalYSaldo);
+  // Escuchar cambios para recalcular
+  document.addEventListener('input', function(e) {
+    if (e.target.classList.contains('cantidad') || e.target.classList.contains('importe_unitario') || e.target.id === 'a_cuenta') {
+      calcularTotales();
+    }
+  });
+
+  // Agregar nueva fila
+  document.getElementById('agregar-item').addEventListener('click', () => {
+    const tbody = document.getElementById('items-body');
+    const nuevaFila = document.createElement('tr');
+    nuevaFila.innerHTML = `
+      <td><textarea name="descripcion[]" class="form-control" rows="2" required></textarea></td>
+      <td><input type="number" name="cantidad[]" class="form-control cantidad" min="0" required></td>
+      <td><input type="number" name="importe_unitario[]" class="form-control importe_unitario" step="0.01" min="0" required></td>
+      <td><button type="button" class="btn btn-danger btn-sm eliminar-fila">Eliminar</button></td>
+    `;
+    tbody.appendChild(nuevaFila);
+  });
+
+  // Eliminar fila
+  document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('eliminar-fila')) {
+      const fila = e.target.closest('tr');
+      fila.remove();
+      calcularTotales();
+    }
+  });
+
+  // Calcular totales inicialmente
+  calcularTotales();
+
+  // Mostrar alerta al enviar el formulario
+  const formulario = document.querySelector('form');
+  formulario.addEventListener('submit', function(event) {
+    event.preventDefault(); // Detiene el envío automático
+    alert('Registro satisfactorio');
+    this.submit(); // Envía el formulario después de mostrar la alerta
+  });
 </script>
 
 </body>

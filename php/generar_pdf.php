@@ -5,7 +5,7 @@ include('conexion.php');
 class PDF extends FPDF {
     // Pie de página
     function Footer() {
-        $this->SetY(-40); // 40 mm desde el final
+        $this->SetY(-40);
         $this->SetFont('Arial', '', 9);
         $text = utf8_decode(
             "BCP: MIGUEL ANGEL AMPUERO HUARAYA\n" .
@@ -24,6 +24,9 @@ $sql = "SELECT * FROM contratos WHERE id = $id";
 $resultado = $conexion->query($sql);
 $contrato = $resultado->fetch_assoc();
 
+$sql_items = "SELECT cantidad, descripcion, importe_unitario FROM items_contrato WHERE contrato_id = $id";
+$result_items = $conexion->query($sql_items);
+
 $pdf = new PDF();
 $pdf->AddPage();
 
@@ -31,15 +34,15 @@ $pageWidth = $pdf->GetPageWidth();
 $logoWidth = 100;
 $logoX = ($pageWidth - $logoWidth) / 2;
 
-// Logo centrado en Y=10
+// Logo
 $pdf->Image('../img/logo_contrato.png', $logoX, 10, $logoWidth);
 
-// Número de contrato arriba a la derecha en Y=15
+// Número de contrato
 $pdf->SetFont('Arial', 'B', 16);
 $pdf->SetXY($pageWidth - 60, 15);
 $pdf->Cell(50, 10, 'Contrato N-' . str_pad($contrato['id'], 4, '0', STR_PAD_LEFT), 0, 1, 'R');
 
-// Datos del emisor debajo del logo, Y=45
+// Datos del emisor
 $pdf->SetXY(10, 45);
 $pdf->SetFont('Arial', 'B', 10);
 $pdf->Cell($pageWidth - 18, 5, utf8_decode("DE: MIGUEL ANGEL AMPUERO HUARAYA"), 0, 1, 'C');
@@ -53,7 +56,7 @@ $pdf->Ln(3);
 $pdf->SetFont('Arial', 'B', 10);
 $pdf->Cell($pageWidth - 18, 5, utf8_decode("BOLETAS DE VENTA - GUÍAS DE REMISIÓN - FACTURA - TARJETAS - VOLANTES - FOLDERS - ETC."), 0, 1, 'C');
 
-// Posición fija para iniciar datos del contrato justo debajo del bloque anterior, por ejemplo Y=85
+// Datos del contrato
 $pdf->SetFont('Arial', 'B', 12);
 $pdf->SetXY(10, 80);
 $pdf->Cell(40, 10, 'Contribuyente:');
@@ -82,7 +85,7 @@ $pdf->SetFont('Arial', '', 12);
 $pdf->SetXY(50, 110);
 $pdf->Cell(0, 10, $contrato['fecha'], 0, 1);
 
-// Cabecera con fondo negro y texto blanco
+// Cabecera tabla de ítems
 $pdf->SetFont('Arial', 'B', 12);
 $pdf->SetFillColor(0, 0, 0);
 $pdf->SetTextColor(255, 255, 255);
@@ -91,45 +94,54 @@ $pdf->Cell(30, 10, 'Cantidad', 1, 0, 'C', true);
 $pdf->Cell(110, 10, 'Descripcion', 1, 0, 'C', true);
 $pdf->Cell(50, 10, 'Importe', 1, 1, 'C', true);
 
-// Filas normales sin relleno y texto negro
+// Filas de ítems
 $pdf->SetFont('Arial', '', 12);
 $pdf->SetTextColor(0, 0, 0);
-$pdf->SetXY(10, 140);
-$pdf->Cell(30, 10, number_format($contrato['cantidad'], 2), 1, 0, 'C');
-$pdf->Cell(110, 10, utf8_decode($contrato['descripcion']), 1, 0);
-$pdf->Cell(50, 10, 'S/ ' . number_format($contrato['importe_unitario'], 2), 1, 1, 'R');
+$y = 140;
+$total = 0;
 
-// Totales, a la derecha
-$posX = $pageWidth - 80;
-$pdf->SetXY($posX, 155);
+while ($item = $result_items->fetch_assoc()) {
+    $importe = $item['cantidad'] * $item['importe_unitario'];
+    $pdf->SetXY(10, $y);
+    $pdf->Cell(30, 10, number_format($item['cantidad'], 2), 1, 0, 'C');
+    $pdf->Cell(110, 10, utf8_decode($item['descripcion']), 1, 0);
+    $pdf->Cell(50, 10, 'S/ ' . number_format($item['importe_unitario'], 2), 1, 1, 'R');
+    $y += 10;
+    $total += $importe;
+}
+
+// Totales: mover posición a la izquierda para que no se salga
+$posX = $pageWidth - 100; // <-- Aquí está el ajuste para que no se salga
+
+$pdf->SetXY($posX, $y + 5);
 $pdf->SetFont('Arial', 'B', 12);
 $pdf->Cell(40, 10, 'Total', 0, 0, 'R');
 $pdf->SetFont('Arial', '', 12);
-$pdf->Cell(30, 10, 'S/ ' . number_format($contrato['total'], 2), 1, 1, 'R');
+$pdf->Cell(50, 10, 'S/ ' . number_format($total, 2), 1, 1, 'R');
 
-$pdf->SetXY($posX, 165);
+$pdf->SetXY($posX, $y + 15);
 $pdf->SetFont('Arial', 'B', 12);
 $pdf->Cell(40, 10, 'A Cuenta', 0, 0, 'R');
 $pdf->SetFont('Arial', '', 12);
-$pdf->Cell(30, 10, 'S/ ' . number_format($contrato['a_cuenta'], 2), 1, 1, 'R');
+$pdf->Cell(50, 10, 'S/ ' . number_format($contrato['a_cuenta'], 2), 1, 1, 'R');
 
-$pdf->SetXY($posX, 175);
+$pdf->SetXY($posX, $y + 25);
 $pdf->SetFont('Arial', 'B', 12);
 $pdf->Cell(40, 10, 'Saldo', 0, 0, 'R');
 $pdf->SetFont('Arial', '', 12);
-$pdf->Cell(30, 10, 'S/ ' . number_format($contrato['saldo'], 2), 1, 1, 'R');
+$pdf->Cell(50, 10, 'S/ ' . number_format($contrato['saldo'], 2), 1, 1, 'R');
 
-// Estado un poco más abajo
-$pdf->SetXY(10, 190);
+// Estado
+$pdf->SetXY(10, $y + 40);
 $pdf->SetFont('Arial', 'B', 12);
 $pdf->Cell(40, 10, 'Estado:');
 $pdf->SetFont('Arial', '', 12);
 $pdf->Cell(0, 10, utf8_decode($contrato['estado']), 0, 1);
 
 // Firma
-$pdf->SetXY(40, 220);
+$pdf->SetXY(40, $y + 70);
 $pdf->Cell(60, 0, '', 'B');
-$pdf->SetXY(40, 225);
+$pdf->SetXY(40, $y + 75);
 $pdf->SetFont('Arial', '', 10);
 $pdf->Cell(60, 10, 'Firma del Contribuyente', 0, 1, 'C');
 
